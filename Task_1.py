@@ -110,6 +110,15 @@ def group_plot(x_or, y_or, fc, gc, n, T, label):
     fig.savefig(label + f'_Общая_{n}', dpi=250)
 
 
+def pars_check(func, n, t, label, T=2*np.pi,):
+    norm_f = np.dot(func, func)*(t[1] - t[0])
+    f_c = fourier_coefficients(func, t, T, n)
+    g_c = g_coefficients(func, t, T, n)
+    sm_ab = np.pi*((f_c[0] ** 2)/2 + sum(f_c[i][0] ** 2 + f_c[i][1] ** 2 for i in range(1, n+1)))
+    sm_c = 2*np.pi*sum(abs(g_c[i])**2 for i in range(len(g_c)))
+    print(f'{label}:\nКвадрат нормы:{norm_f}\na, b: {sm_ab}\nc:{sm_c}\n')
+
+
 # придуманные постоянные
 a, b = 2, 1
 t0, t1, t2 = 1, 3, 5
@@ -119,7 +128,7 @@ original_info = []
 fourier_info = []
 
 # квадратная функция
-x_s = np.linspace(0, 6, 1000)
+x_s = np.linspace(-np.pi, np.pi, 1000)
 y_s = np.array([b if t >= t1 else a for t in x_s])
 original_info.append(['График функции f(t) - Меандр', x_s, y_s])
 T_s = x_s[-1] - x_s[0]
@@ -128,7 +137,7 @@ g_s = g_coefficients(y_s, x_s, T_s, n)
 fourier_info.append([T_s, c_s, g_s, 'Меандр'])
 
 # четная функция
-x_e = np.linspace(-2 * np.pi, 2 * np.pi, 1000)
+x_e = np.linspace(-np.pi, np.pi, 1000)
 y_e = np.absolute(np.cos(x_e))
 original_info.append(['График функции f(t)=|cos(t)|', x_e, y_e])
 T_e = x_e[-1] - x_e[0]
@@ -138,7 +147,7 @@ fourier_info.append([T_e, c_e, g_e, 'Четная'])
 
 
 # нечетная функция
-x_o = np.linspace(-2 * np.pi, 2 * np.pi, 1000)
+x_o = np.linspace(-np.pi, np.pi, 1000)
 y_o = np.multiply(np.sin(3 * x_o), np.cos(4 * x_o))
 original_info.append(['График функции f(t)=sin(3t)*cos(4t)', x_o, y_o])
 T_o = x_o[-1] - x_o[0]
@@ -147,7 +156,7 @@ g_o = g_coefficients(y_o, x_o, T_o, n)
 fourier_info.append([T_o, c_o, g_o, 'Нечетная'])
 
 # функция общего вида
-x_n = np.linspace(-2 * np.pi, 2 * np.pi, 1000, endpoint=True)
+x_n = np.linspace(-np.pi, np.pi, 1000, endpoint=True)
 y_n = np.add(np.sin(3 * x_n), np.cos(x_n - 5))
 original_info.append(['График функции f(t)=sin(3t)+cos(t-5)', x_n, y_n])
 T_n = x_n[-1] - x_n[0]
@@ -172,12 +181,8 @@ f.close()
 '''
 
 # Проверяем равенство Парсеваля:
-pars = open('Parseval_identity.txt', 'rw')
 for i in range(4):
-    norm = (np.dot(original_info[i][2], original_info[i][2])*(original_info[i][1][1]-original_info[i][1][0]))
-    pars.write(f'{fourier_info[i][3]}:\nРавенство для a, b:\n')
-    
+    pars_check(original_info[i][2], 200, original_info[i][1], fourier_info[i][3])
 
-pars.close()
 
 
